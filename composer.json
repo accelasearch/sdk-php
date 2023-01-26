@@ -1,0 +1,27 @@
+{
+    "name": "accelasearch/sdk-php",
+    "description": "Allows easy integration with AccelaSearch's product managerment.",
+    "type": "library",
+    "bin": [
+        "bin/collector.php",
+        "bin/shop.php"
+    ],
+    "authors": [{
+        "name": "Marco Zanella",
+        "email": "marco.zanella@accelasearch.com"
+    }],
+    "license": [
+        "MIT"
+    ],
+    "require": {
+      "php": ">=7.1.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": ">=7"
+    },
+    "autoload": {
+        "psr-4": {
+            "AccelaSearch\\ProductMapper\\": "src"
+        }
+    }
+}
