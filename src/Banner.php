@@ -18,6 +18,7 @@ class Banner implements ItemInterface {
         $this->url = $url;
         $this->desktop_image_url = $desktop_image_url;
         $this->mobile_image_url = $mobile_image_url;
+        $this->size = self::DEFAULT_SIZE;
     }
 
     public function getDesktopImageUrl(): string {
