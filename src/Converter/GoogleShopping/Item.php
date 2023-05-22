@@ -155,6 +155,6 @@ class Item implements ItemInterface {
         if (empty($values)) {
             throw new Exception('Missing mandatory element "' . $key . '".');
         }
-        return $values[0];
+        return trim($values[0]);
     }
 }
