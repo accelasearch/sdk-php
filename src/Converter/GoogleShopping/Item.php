@@ -56,22 +56,7 @@ class Item implements ItemInterface {
         }
 
         // Reads pricing
-        $pricing = new Pricing();
-        list($listing_price, $currency) = explode(' ', (string) $this->readValue($data, 'price'), 2);
-        if (is_null($currency)) {
-            throw new Exception('Missing currency on price of item ' . $external_identifier);
-        }
-        $listing_price = str_replace(',', '', $listing_price);
-        $price = new Price($listing_price, $listing_price, $currency, 0.0, $customer_group);
-        if (!empty($data->xpath('g:sale_price'))) {
-            list($selling_price, $currency) = explode(' ', (string) $data->xpath('g:sale_price')[0], 2);
-            if (is_null($currency)) {
-                throw new Exception('Missing currency on selling price of item ' . $external_identifier);
-            }
-            $selling_price = str_replace(',', '', $selling_price);
-            $price->setSellingPrice(floatval($selling_price));
-        }
-        $pricing->add($price);
+        $pricing = $this->readPricing($data, $external_identifier);
 
         // Builds base item
         $item = new Simple($url, $external_identifier, $availability, $pricing);
@@ -156,5 +141,53 @@ class Item implements ItemInterface {
             throw new Exception('Missing mandatory element "' . $key . '".');
         }
         return trim($values[0]);
+    }
+
+    private function readPricing($data, $external_identifier): Pricing {
+        $parse_number = function (string $string) {
+            $decimal_separator = $string[strlen($string) - 3];
+            switch ($string[strlen($string) - 3]) {
+                case '.':
+                    $decimal_separator = '.';
+                    $thousands_separator = ',';
+                    break;
+                case ',':
+                    $decimal_separator = ',';
+                    $thousands_separator = '.';
+                    break;
+                default:
+                    $decimal_separator = strpos($string, ',') === false ? ',' : '.';
+                    $thousands_separator = strpos($string, ',') === false ? '.' : ',';
+            }
+            $normalized_string = str_replace($thousands_separator, '', $string);
+            $normalized_string = str_replace($decimal_separator, '.', $normalized_string);
+            return floatval($normalized_string);
+        };
+        $customer_group = CustomerGroup::fromDefault();
+        $pricing = new Pricing();
+
+        $price_string = (string) $this->readValue($data, 'price');
+        $price_data = explode(' ', $price_string, 2);
+        if (count($price_data) != 2) {
+            throw new Exception("Malformed listing price string for item $external_identifier: \"$price_string\"");
+        }
+        $price_index = ctype_alpha($price_data[0]) ? 1 : 0;
+        $currency_index = ctype_alpha($price_data[0]) ? 0 : 1;
+        $listing_price = $parse_number($price_data[$price_index]);
+        $currency = strtoupper($price_data[$currency_index]);
+        $price = new Price($listing_price, $listing_price, $currency, 0.0, $customer_group);
+
+        if (!empty($data->xpath('g:sale_price')) || !empty($data->xpath('sale_price'))) {
+            $price_string = (string) $this->readValue($data, 'sale_price');
+            $price_data = explode(' ', $price_string, 2);
+            if (count($price_data) != 2) {
+                throw new Exception("Malformed selling price string for item $external_identifier: \"$price_string\"");
+            }
+            $price_index = ctype_alpha($price_data[0]) ? 1 : 0;
+            $selling_price = $parse_number($price_data[$price_index]);
+            $price->setSellingPrice($selling_price);
+        }
+        $pricing->add($price);
+        return $pricing;
     }
 }
