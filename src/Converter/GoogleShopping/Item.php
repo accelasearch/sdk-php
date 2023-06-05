@@ -83,7 +83,7 @@ class Item implements ItemInterface {
         }
 
         // Reads category
-        if (!empty($data->xpath('g:product_type'))) {
+        if (!empty($data->xpath('g:product_type')) || !empty($data->xpath('product_type'))) {
             $category_path = explode(' &gt; ', (string) $this->readValue($data, 'product_type'));
             if (count($category_path) == 1) {
                 $category_path = explode(' > ', (string) $this->readValue($data, 'product_type'));
