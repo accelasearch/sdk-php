@@ -144,50 +144,56 @@ class Item implements ItemInterface {
     }
 
     private function readPricing($data, $external_identifier): Pricing {
-        $parse_number = function (string $string) {
-            $decimal_separator = $string[strlen($string) - 3];
-            switch ($string[strlen($string) - 3]) {
-                case '.':
-                    $decimal_separator = '.';
-                    $thousands_separator = ',';
-                    break;
-                case ',':
-                    $decimal_separator = ',';
-                    $thousands_separator = '.';
-                    break;
-                default:
-                    $decimal_separator = strpos($string, ',') === false ? ',' : '.';
-                    $thousands_separator = strpos($string, ',') === false ? '.' : ',';
-            }
-            $normalized_string = str_replace($thousands_separator, '', $string);
-            $normalized_string = str_replace($decimal_separator, '.', $normalized_string);
-            return floatval($normalized_string);
-        };
         $customer_group = CustomerGroup::fromDefault();
         $pricing = new Pricing();
 
-        $price_string = (string) $this->readValue($data, 'price');
-        $price_data = explode(' ', $price_string, 2);
-        if (count($price_data) != 2) {
+        // Reads price
+        try {
+            $price_string = (string) $this->readValue($data, 'price');
+            $price_data = $this->readPriceString($price_string);
+            $price = new Price($price_data["price"], $price_data["price"], $price_data["currency"], 0.0, $customer_group);
+        }
+        catch (Exception $e) {
             throw new Exception("Malformed listing price string for item $external_identifier: \"$price_string\"");
         }
-        $price_index = ctype_alpha($price_data[0]) ? 1 : 0;
-        $currency_index = ctype_alpha($price_data[0]) ? 0 : 1;
-        $listing_price = $parse_number($price_data[$price_index]);
-        $currency = strtoupper($price_data[$currency_index]);
-        $price = new Price($listing_price, $listing_price, $currency, 0.0, $customer_group);
 
-        if (!empty($data->xpath('g:sale_price')) || !empty($data->xpath('sale_price'))) {
-            $price_string = (string) $this->readValue($data, 'sale_price');
-            $price_data = explode(' ', $price_string, 2);
-            if (count($price_data) != 2) {
-                throw new Exception("Malformed selling price string for item $external_identifier: \"$price_string\"");
+        // Reads special price
+        try {
+            if (!empty($data->xpath('g:sale_price')) || !empty($data->xpath('sale_price'))) {
+                $price_string = (string) $this->readValue($data, 'sale_price');
+                $price_data = $this->readPriceString($price_string);
+                $price->setSellingPrice($price_data["price"]);
             }
-            $price_index = ctype_alpha($price_data[0]) ? 1 : 0;
-            $selling_price = $parse_number($price_data[$price_index]);
-            $price->setSellingPrice($selling_price);
+        }
+        catch (Exception $e) {
+            throw new Exception("Malformed selling price string for item $external_identifier: \"$price_string\"");
         }
         $pricing->add($price);
         return $pricing;
+    }
+
+    private function readPriceString(string $price_string): array {
+        // Checks whether price string contains two pieces
+        $price_data = explode(' ', $price_string, 2);
+        if (count($price_data) != 2) {
+            throw new Exception("Malformed price string: \"$price_string\"");
+        }
+
+        // Determines whether currency is before or after the price
+        $price_index = 0;
+        $currency_index = 1;
+        if (ctype_alpha($price_data[0])) {
+            $price_index = 1;
+            $currency_index = 0;
+        }
+
+        // Reads currency and price
+        $price = floatval($price_data[$price_index]);
+        $currency = strtoupper($price_data[$currency_index]);
+
+        return [
+            "price" => $price,
+            "currency" => $currency
+        ];
     }
 }
