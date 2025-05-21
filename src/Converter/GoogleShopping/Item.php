@@ -73,13 +73,15 @@ class Item implements ItemInterface {
             if (count($category_path) == 1) {
                 $category_path = explode(' > ', (string) $this->readValue($data, 'product_type'));
             }
-            if (!empty($category_path)) {
-                $previous = Category::fromName(array_shift($category_path));
+	    if (!empty($category_path)) {
+                $current_path = array_shift($category_path);
+                $previous = Category::fromName($current_path);
                 foreach ($category_path as $category) {
-                    $previous = new Category($category, $category, $previous);
+                    $current_path .= "/" . $category;
+                    $previous = new Category($current_path, $category, $previous);
                 }
                 $item->addCategory($previous);
-	    }
+            }
         }
 
         // Reads custom attributes
