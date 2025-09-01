@@ -83,6 +83,15 @@ class Shop {
         return $shops;
     }
 
+    public function searchByHash(string $hash): ?Subject {
+        $query = 'SELECT id, url, description, langiso, cmsid, cmsdata, disabled, firstinit, lastsync, lastupdate '
+            . 'FROM storeviews WHERE hash = :hash';
+        $sth = $this->dbh->prepare($query);
+        $sth->execute([':hash' => $hash]);
+        $row = $sth->fetch();
+        return !empty($row) ? $this->rowToShop($row) : null;
+    }
+
     private function rowToShop(array $row): Subject {
         $shop = new Subject(
             $row['url'],
