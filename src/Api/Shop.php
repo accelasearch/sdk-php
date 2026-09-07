@@ -18,28 +18,28 @@ class Shop {
         return $this;
     }
 
-    public function startSynchronization(int $shop_identifier): self {
-        $path = '/API/shops/' . $shop_identifier . '/synchronization';
+    public function startSynchronization(string $shop_uuid): self {
+        $path = '/API/shops/' . $shop_uuid . '/synchronization';
         $this->post(Request::fromPath($path));
         return $this;
     }
 
-    public function endSynchronization(int $shop_identifier): self {
-        $path = '/API/shops/' . $shop_identifier . '/synchronization';
+    public function endSynchronization(string $shop_uuid): self {
+        $path = '/API/shops/' . $shop_uuid . '/synchronization';
         $this->delete(Request::fromPath($path));
         return $this;
     }
 
-    public function index(int $shop_identifier): self {
-        $path = '/API/shops/' . $shop_identifier . '/index';
+    public function index(string $shop_uuid): self {
+        $path = '/API/shops/' . $shop_uuid . '/index';
         $this->post(Request::fromPath($path));
         return $this;
     }
 
-    public function convertShopIndentifier(int $collector_shop_identifier): int {
+    public function convertShopIndentifier(int $collector_shop_identifier): string {
         $path = '/API/shops/' . $collector_shop_identifier . '/convert';
         $response = $this->get(Request::fromPath($path));
         $body = $response->getBodyAsArray();
-        return $body['shopIdentifier'];
+        return $body['shopUuid'];
     }
 }

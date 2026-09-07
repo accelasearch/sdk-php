@@ -23,7 +23,7 @@ if ($argc < 3) {
       . "\t\tsync-start <shop id>: Notifies AccelaSearch of a synchronization start" . PHP_EOL
       . "\t\tsync-end <shop id>:   Notifies AccelaSearch of a synchronization start" . PHP_EOL
       . "\t\tindex <shop id>:      Asks for a reindex for given shop" . PHP_EOL
-      . "\t\tconvert <shop id>:    Convert a collector shop identifier into a shop identifier" . PHP_EOL
+      . "\t\tconvert <shop id>:    Convert a collector shop identifier into a shop uuid" . PHP_EOL
     );
 }
 
@@ -53,8 +53,8 @@ elseif ($command === 'index') {
     $shop_api->index($argv[4]);
 }
 elseif ($command === 'convert') {
-    $shop_identifier = $shop_api->convertShopIndentifier(trim($argv[4]));
-    echo "Shop identifier:           " . $shop_identifier . PHP_EOL;
+    $shop_uuid = $shop_api->convertShopIndentifier(trim($argv[4]));
+    echo "Shop uuid:                 " . $shop_uuid . PHP_EOL;
     echo "Collector shop identifier: " . $argv[4] . PHP_EOL;
 }
 else {

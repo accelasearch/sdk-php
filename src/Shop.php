@@ -5,6 +5,7 @@ class Shop {
     public const DEFAULT_IS_ACTIVE = false;
     private $is_active;
     private $identifier;
+    private $uuid;
     private $url;
     private $description;
     private $language_iso;
@@ -21,6 +22,7 @@ class Shop {
     ) {
         $this->is_active = self::DEFAULT_IS_ACTIVE;
         $this->identifier = null;
+        $this->uuid = null;
         $this->url = $url;
         $this->description = null;
         $this->language_iso = $language_iso;
@@ -41,6 +43,15 @@ class Shop {
 
     public function setIdentifier(int $identifier): self {
         $this->identifier = $identifier;
+        return $this;
+    }
+
+    public function getUuid(): ?string {
+        return $this->uuid;
+    }
+
+    public function setUuid(string $uuid): self {
+        $this->uuid = $uuid;
         return $this;
     }
 

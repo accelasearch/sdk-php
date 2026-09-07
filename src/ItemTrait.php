@@ -7,11 +7,11 @@ trait ItemTrait {
     private $sku;
     private $url;
 
-    public function getIdentifier(): ?int {
+    public function getIdentifier(): ?string {
         return $this->identifier;
     }
 
-    public function setIdentifier(int $identifier): ItemInterface {
+    public function setIdentifier(string $identifier): ItemInterface {
         $this->identifier = $identifier;
         return $this;
     }
